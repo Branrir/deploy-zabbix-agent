@@ -30,7 +30,7 @@ Example Playbook
 License
 -------
 
-BSD
+GPL2
 
 Author Information
 ------------------
