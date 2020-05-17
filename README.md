@@ -1,4 +1,4 @@
-Role Name
+deploy-zabbix-agent
 =========
 
 Deployment of zabbix-agent2 on Debian and RHEL
