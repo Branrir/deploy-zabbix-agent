@@ -20,7 +20,7 @@
 - name: Download zabbix-release
   get_url:
     url='http://repo.zabbix.com/zabbix/5.0/debian/pool/main/z/zabbix-release/zabbix-release_5.0-1%2Bbuster_all.deb'
-    dest='/home/{{ ansible_env.USER }}/Downloads/zabbix-release.deb'
+    dest='/home/{{ ansible_env.USER }}/zabbix-release.deb'
   when:
     - zabbix_release_check_deb.rc == 1
     - ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == Ubuntu
@@ -28,14 +28,22 @@
 - name: Install zabbix-release
   become: yes
   apt:
-    deb='/home/{{ ansible_env.USER }}/Downloads/zabbix-release.deb'
+    deb='/home/{{ ansible_env.USER }}/zabbix-release.deb'
   when:
     - zabbix_release_check_deb.rc == 1
     - ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == Ubuntu
 
 # Install agent 2
+- name: remove old agent
+  apt:
+    name:
+      - zabbix-agent
+    state: absent
+  become: yes
+  when: ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu'
 
-- name: Install Zabbix-agent (Debian)
+
+- name: Install Zabbix-agent2 (Debian)
   apt:
     name:
       - zabbix-agent2
@@ -58,6 +66,14 @@
   become: yes
   when: (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat' ) and {{ ansible_distribution_major_version }}  == 7
 
+
+- name: remove zabbix-agent
+  yum:
+    name: zabbix-agent
+    state: absent
+  become: yes
+  when: ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat'
+
 - name: install zabbix-agent (RHEL)
   yum:
     name: zabbix-agent2
@@ -68,7 +84,7 @@
 - name: Configutation for Server/Proxy
   template:
     src: zabbix-agentd.conf.j2
-    dest: "/etc/zabbix/zabbix_agentd.conf"
+    dest: "/etc/zabbix/zabbix_agent2.conf"
     owner: root
     group: root
     mode: 0644
