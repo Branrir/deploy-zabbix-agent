@@ -1,0 +1,56 @@
+---
+# Check if installed
+
+#- name: check if already installed (RHEL)
+#  yum:
+#    list: 'zabbix-release'
+#  register: zabbix_release_check
+#  when: ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat'
+
+
+
+  
+
+# Install Zabbix repo (CertOS/RHEL)
+
+- name: install Zabbix-agent (RHEL 8)
+  yum:
+    name: "{{ repo_rhel_8 }}"
+    state: present
+  become: yes
+  when: 
+    - (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat' ) and {{ ansible_distribution_major_version }} == 8
+    
+- name: install zabbix-agent (RHEL 7)
+  yum:
+    name: "{{ repo_rhel_7 }}"
+    state: present
+  become: yes
+  when: 
+    - (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat' ) and {{ ansible_distribution_major_version }}  == 7
+
+
+- name: install zabbix-agent (RHEL 6)
+  yum:
+    name: "{{ repo_rhel_6 }}"
+    state: present
+  become: yes
+  when: 
+    - (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat' ) and {{ ansible_distribution_major_version }}  == 6
+
+
+
+
+- name: remove zabbix-agent
+  yum:
+    name: zabbix-agent
+    state: absent
+  become: yes
+  when: ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat'
+
+- name: install zabbix-agent (RHEL)
+  yum:
+    name: zabbix-agent2
+    state: present
+  become: yes
+  when: ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat'

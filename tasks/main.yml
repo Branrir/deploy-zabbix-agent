@@ -1,6 +1,14 @@
 ---
 # tasks file for deploy-zabbix-agent
 
+- name: Run Debian/Ubuntu playbook
+  import_tasks: install_deb.yml
+  when: ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Run RHEL/CentOS playbook
+  import_tasks: install_rhel.yml
+  when: ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat'
+
 - name: Create a log directory if it does not exist
   file:
     path: /var/log/zabbix-agent/
@@ -8,88 +16,32 @@
     mode: '0755'
   become: yes
 
-# Zabbix repo deb 10
-
-- name: check if already installed
-  command: dpkg-query -W zabbix-release
-  register: zabbix_release_check_deb
-  failed_when: zabbix_release_check_deb.rc > 1
-  changed_when: zabbix_release_check_deb.rc == 1
-  when: ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == Ubuntu
-
-- name: Download zabbix-release
-  get_url:
-    url='http://repo.zabbix.com/zabbix/5.0/debian/pool/main/z/zabbix-release/zabbix-release_5.0-1%2Bbuster_all.deb'
-    dest='/home/{{ ansible_env.USER }}/zabbix-release.deb'
-  when:
-    - zabbix_release_check_deb.rc == 1
-    - ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == Ubuntu
-
-- name: Install zabbix-release
-  become: yes
-  apt:
-    deb='/home/{{ ansible_env.USER }}/zabbix-release.deb'
-  when:
-    - zabbix_release_check_deb.rc == 1
-    - ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == Ubuntu
-
-# Install agent 2
-- name: remove old agent
-  apt:
-    name:
-      - zabbix-agent
-    state: absent
-  become: yes
-  when: ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu'
-
-
-- name: Install Zabbix-agent2 (Debian)
-  apt:
-    name:
-      - zabbix-agent2
-    state: present
-    update_cache: yes
-  become: yes
-  when: ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu'
-
-- name: install Zabbix-agent (RHEL 8)
-  yum:
-    name: https://repo.zabbix.com/zabbix/5/rhel/8/x86_64/zabbix-release-5-1.el8.noarch.rpm
-    state: present
-  become: yes
-  when: (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat' ) and {{ ansible_distribution_major_version }} == 8
-
-- name: install zabbix-agent (RHEL 7)
-  yum:
-    name: https://repo.zabbix.com/zabbix/5/rhel/7/x86_64/zabbix-release-5-1.el7.noarch.rpm
-    state: present
-  become: yes
-  when: (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat' ) and {{ ansible_distribution_major_version }}  == 7
-
-
-- name: remove zabbix-agent
-  yum:
-    name: zabbix-agent
-    state: absent
-  become: yes
-  when: ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat'
-
-- name: install zabbix-agent (RHEL)
-  yum:
-    name: zabbix-agent2
-    state: present
-  become: yes
-  when: ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat'
-
-- name: Configutation for Server/Proxy
+# configuration for  zabbix-agent2 on supportet distributions
+- name: Configutation for Server/Proxy (zabbix_agent2)
   template:
-    src: zabbix-agentd.conf.j2
+    src: zabbix-agent2.conf.j2
     dest: "/etc/zabbix/zabbix_agent2.conf"
     owner: root
     group: root
     mode: 0644
   become: yes
+  when: 
+    - not (ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 8)
+    - not (ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 7) 
   
+# configuration for zabbix-agent when zabbix-agent2 not supported
+- name: Configuration for Server/Proxy (zabbix_agent)
+  template:
+    src: zabbix-agentd.conf.j2
+    dest: "/etc/zabbix/zabbix_agentd.conf"
+    owner: root
+    group: root
+    mode: 0644
+  become: yes
+  when:
+    - ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 8
+    - ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 7
+
 
 - name: RHEL Firewall
   firewalld:
@@ -97,6 +49,7 @@
     zone: public
     permanent: true
     state: enabled
+    immediate: yes
   become: yes
   when: ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat'
 
@@ -107,13 +60,28 @@
     zone: public
     permanent: true
     state: enabled
+    immediate: yes
   become: yes
   when: ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat'
 
 
-- name: Check zabbix-agent service
+# restart zabbix-agent
+- name: Check zabbix-agent2 service
   service:
     name: zabbix-agent2
     state: restarted
     enabled: yes
   become: yes
+  when: 
+    - not (ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 8)
+    - not (ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 7)
+
+- name: Check zabbix-agent service
+  service:
+    name: zabbix-agent
+    state: restarted
+    enabled: yes
+  become: yes
+  when: 
+    - ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 8
+    - ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 7
