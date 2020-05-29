@@ -17,7 +17,7 @@
     dest='/home/{{ ansible_env.USER }}/zabbix-release.deb'
   when:
     - zabbix_release_check_deb.rc == 1
-    - ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 10
+    - ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] == '10'
 
 - name: Download zabbix-release(Debian 9) 
   get_url:
@@ -25,7 +25,7 @@
     dest='/home/{{ ansible_env.USER }}/zabbix-release.deb'
   when:
     - zabbix_release_check_deb.rc == 1
-    - ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 9
+    - ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] == '9'
 
 
 - name: Download zabbix-release(Debian 8) 
@@ -34,7 +34,7 @@
     dest='/home/{{ ansible_env.USER }}/zabbix-release.deb'
   when:
     - zabbix_release_check_deb.rc == 1
-    - ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 8
+    - ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] == '8'
 
 - name: Download zabbix-release(Debian 7)
   get_url:
@@ -42,7 +42,7 @@
     dest='/home/{{ ansible_env.USER }}/zabbix-release.deb'
   when:
     - zabbix_release_check_deb.rc == 1
-    - ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 7
+    - ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] == '7'
     
 
 - name: Download zabbix-release(Ubuntu 18.xx) 
@@ -51,7 +51,7 @@
     dest='/home/{{ ansible_env.USER }}/zabbix-release.deb'
   when:
     - zabbix_release_check_deb.rc == 1
-    - ansible_facts['distribution'] == 'Ubuntu' and ansible_distribution_version|int >= 18
+    - ansible_facts['distribution'] == 'Ubuntu' and {{ ansible_distribution_version }} >= 18
 
 
 - name: Download zabbix-release(Ubuntu 16.xx)
@@ -60,7 +60,7 @@
     dest='/home/{{ ansible_env.USER }}/zabbix-release.deb'
   when:
     - zabbix_release_check_deb.rc == 1
-    - ansible_facts['distribution'] == 'Ubuntu' and ansible_distribution_version|int >= 16
+    - ansible_facts['distribution'] == 'Ubuntu' and ansible_distribution_version >= 16
 
 - name: Download zabbix-release(Ubuntu 14.xx)
   get_url:
@@ -68,7 +68,7 @@
     dest='/home/{{ ansible_env.USER }}/zabbix-release.deb'
   when:
     - zabbix_release_check_deb.rc == 1
-    - ansible_facts['distribution'] == 'Ubuntu' and ansible_distribution_version|int >= 14
+    - ansible_facts['distribution'] == 'Ubuntu' and ansible_distribution_version >= 14
 
 
 
@@ -90,8 +90,8 @@
   become: yes
   when: 
     - ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu'
-    - ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int != 8
-    - ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int != 7
+    - ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] != '8'
+    - ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] != '7'
 
 
 - name: Install Zabbix-agent2 (Debian/Ubuntu)
@@ -103,8 +103,8 @@
   become: yes
   when: 
     - ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu'
-    - not (ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 8)
-    - not (ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 7)
+    - not (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] == '8')
+    - not (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] == '7')
 
 - name: Install Zabbix-agent (Debian/Ubuntu old)
   apt:
@@ -113,6 +113,5 @@
     state: present
     update_cache: yes
   become: yes
-  when:
-    - ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 8
-    - ansible_facts['distribution'] == 'Debian' and ansible_distribution_major_version|int == 7
+  when: (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] == '8') or
+        (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] == '7')
