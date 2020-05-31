@@ -19,7 +19,7 @@
     state: present
   become: yes
   when: 
-    - (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat' ) and {{ ansible_distribution_major_version }} == 8
+    - (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat' ) and ansible_facts['distribution_major_version'] == 8
     
 - name: install zabbix-agent (RHEL 7)
   yum:
@@ -27,7 +27,7 @@
     state: present
   become: yes
   when: 
-    - (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat' ) and {{ ansible_distribution_major_version }}  == 7
+    - (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat' ) and ansible_facts['distribution_major_version']  == 7
 
 
 - name: install zabbix-agent (RHEL 6)
@@ -36,7 +36,7 @@
     state: present
   become: yes
   when: 
-    - (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat' ) and {{ ansible_distribution_major_version }}  == 6
+    - (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'RedHat' ) and ansible_facts['distribution_major_version']  == 6
 
 
 
