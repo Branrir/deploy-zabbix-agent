@@ -1,7 +1,7 @@
 deploy-zabbix-agent
 =========
 
-Deployment of zabbix-agent2 on Debian and RHEL. If old zabbix-agent is installed it will be removed.
+Deployment of zabbix-agent2 or zabbix-agent on Debian and RHEL. If old zabbix-agent is installed it will be removed.
 
 Requirements
 ------------
